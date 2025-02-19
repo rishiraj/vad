@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Activity Detection Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f7f9;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #4267b2; /* A calming blue */
+        }
+
+        p {
+            font-size: 1em;
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        .speech-indicator {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #e0e0e0; /* Light grey for silence */
+            margin: 20px auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .speech-indicator.speaking {
+            background-color: #2ecc71; /* Green for speaking */
+            color: white;
+            transform: scale(1.1); /* Slightly enlarge when speaking */
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.5);
+        }
+
+        .loading-message {
+            color: #999;
+            font-style: italic;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Voice Activity Detection for Hands-Free Interaction</h1>
+        <p>Demo by Rishiraj Acharya using ONNX in JavaScript</p>
+
+        <div class="speech-indicator" id="speechIndicator">
+            Silent
+        </div>
+        <p class="loading-message" id="loadingMessage">Loading VAD model...</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.7/dist/bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const speechIndicator = document.getElementById('speechIndicator');
+            const loadingMessage = document.getElementById('loadingMessage');
+
+            try {
+                const myvad = await vad.MicVAD.new({
+                    onSpeechStart: () => {
+                        speechIndicator.textContent = "Speaking";
+                        speechIndicator.classList.add('speaking');
+                        loadingMessage.textContent = "Listening for speech..."; // Update loading message
+                    },
+                    onSpeechEnd: () => {
+                        speechIndicator.textContent = "Silent";
+                        speechIndicator.classList.remove('speaking');
+                        loadingMessage.textContent = "Listening for speech..."; // Update loading message
+                    }
+                });
+                await myvad.start();
+                console.log("VAD started");
+                loadingMessage.textContent = "VAD is ready and listening..."; // Update loading message after start
+            } catch (error) {
+                console.error("Error initializing VAD:", error);
+                loadingMessage.textContent = "Error loading VAD. Please check console.";
+                speechIndicator.textContent = "Error";
+                speechIndicator.style.backgroundColor = "#e74c3c"; // Red for error
+                speechIndicator.style.color = "white";
+            }
+        });
+    </script>
+</body>
+</html>
